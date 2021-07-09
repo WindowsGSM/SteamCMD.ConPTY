@@ -25,15 +25,3 @@ jobs:
 
     - name: Build SteamCMD.WPF
       run: dotnet build SteamCMD.WPF
-      
-    - name: Publish SteamCMD.WPF
-      run: dotnet publish SteamCMD.WPF -c Release -o Publish
-
-    - name: Draft - steamcmd.wpf.exe
-      uses: softprops/action-gh-release@v1
-      if: startsWith(github.ref, 'refs/tags/')
-      with:
-        draft: true
-        files: Publish/steamcmd.wpf.exe
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
