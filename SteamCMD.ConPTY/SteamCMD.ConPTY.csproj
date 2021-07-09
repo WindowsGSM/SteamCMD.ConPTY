@@ -15,7 +15,7 @@
   </PropertyGroup>
 
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="dotnet publish &quot;$(SolutionDir)..\SteamCMD.ConPTY.Executable&quot; -o &quot;$(SolutionDir)Resources&quot;" />
+    <Exec Command="dotnet publish &quot;..\SteamCMD.ConPTY.Executable&quot; -o &quot;Resources&quot;" />
   </Target>
 
   <ItemGroup>
