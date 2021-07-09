@@ -5,6 +5,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SteamCMD.ConPTY.Executable
@@ -92,6 +93,8 @@ namespace SteamCMD.ConPTY.Executable
                 {
                     int readed = reader.Read(buffer, 0, buffer.Length);
 
+                    Thread.Sleep(1);
+
                     if (readed == 0)
                     {
                         continue;
@@ -132,6 +135,8 @@ namespace SteamCMD.ConPTY.Executable
                 while (!IsCtrlCReceived)
                 {
                     int readed = reader.Read(buffer, 0, buffer.Length);
+
+                    Thread.Sleep(1);
 
                     if (readed == 0)
                     {

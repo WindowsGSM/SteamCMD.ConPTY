@@ -2,8 +2,8 @@
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SteamCMD.ConPTY
@@ -160,6 +160,8 @@ namespace SteamCMD.ConPTY
                 while (!disposedValue)
                 {
                     int readed = reader.Read(buffer, 0, buffer.Length);
+
+                    Thread.Sleep(1);
 
                     if (readed == 0)
                     {
