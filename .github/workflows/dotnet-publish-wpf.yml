@@ -2,9 +2,8 @@ name: Dotnet Publish WPF
 
 on:
   push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    tags:
+      - '*'
 
 jobs:
   draft:
@@ -22,7 +21,6 @@ jobs:
 
     - name: Draft - steamcmd.wpf.exe
       uses: softprops/action-gh-release@v1
-      if: startsWith(github.ref, 'refs/tags/')
       with:
         draft: true
         files: Publish/steamcmd.wpf.exe
