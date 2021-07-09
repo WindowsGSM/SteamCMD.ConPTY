@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <DebugType>embedded</DebugType>
+    <ApplicationIcon>icon.ico</ApplicationIcon>
+    <RootNamespace>SteamCMD.WPF</RootNamespace>
+    <AssemblyName>steamcmd.wpf</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SteamCMD.ConPTY\SteamCMD.ConPTY.csproj" />
+  </ItemGroup>
+
+</Project>

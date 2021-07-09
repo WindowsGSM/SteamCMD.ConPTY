@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <DebugType>embedded</DebugType>
+    <Authors>BattlefieldDuck</Authors>
+    <Company>BattlefieldDuck</Company>
+    <Description>Real-time output from SteamCMD with Pseudo Console (ConPTY)</Description>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageProjectUrl>https://github.com/WindowsGSM/SteamCMD.ConPTY</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/WindowsGSM/SteamCMD.ConPTY</RepositoryUrl>
+    <PackageTags>steamcmd, conpty, windows-10</PackageTags>
+    <PackageIcon>icon.png</PackageIcon>
+  </PropertyGroup>
+
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <Exec Command="dotnet publish &quot;$(SolutionDir)..\SteamCMD.ConPTY.Executable&quot; -o &quot;$(SolutionDir)Resources&quot;" />
+  </Target>
+
+  <ItemGroup>
+    <None Remove="Resources\steamcmd.conpty.exe" />
+    <None Include="..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+    <None Include="icon.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\steamcmd.conpty.exe" />
+  </ItemGroup>
+
+</Project>
