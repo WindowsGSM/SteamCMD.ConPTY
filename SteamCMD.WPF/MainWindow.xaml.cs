@@ -53,7 +53,7 @@ namespace SteamCMD.WPF
             {
                 Dispatcher.Invoke(() =>
                 {
-                    Close();
+                    Application.Current.Shutdown(exitCode);
                 });
             };
 
