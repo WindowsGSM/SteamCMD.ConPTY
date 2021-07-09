@@ -1,0 +1,27 @@
+name: Dotnet Package
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET Core 3.1
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '3.1.x'
+
+    - name: Build SteamCMD.ConPTY.Executable
+      run: dotnet build SteamCMD.ConPTY.Executable
+
+    - name: Build SteamCMD.ConPTY
+      run: dotnet build SteamCMD.ConPTY
+
+    - name: Build SteamCMD.WPF
+      run: dotnet build SteamCMD.WPF
