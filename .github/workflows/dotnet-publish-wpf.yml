@@ -1,0 +1,28 @@
+name: Dotnet Publish WPF
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET Core 3.1
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '3.1.x'
+
+    - name: Build SteamCMD.WPF
+      run: dotnet publish SteamCMD.WPF -c Release -o Publish
+
+    - name: Upload steamcmd.wpf.exe to release
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: Publish/steamcmd.wpf.exe
+        tag: ${{ github.ref }}
+        overwrite: true
