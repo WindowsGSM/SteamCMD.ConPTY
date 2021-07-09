@@ -1,5 +1,5 @@
 ﻿using SteamCMD.ConPTY;
-using System.ComponentModel;
+using System;
 using System.IO;
 using System.Windows;
 using System.Windows.Input;
@@ -73,7 +73,7 @@ namespace SteamCMD.WPF
             TextBoxInput.Focus();
         }
 
-        protected override void OnClosing(CancelEventArgs e)
+        protected override void OnClosed(EventArgs e)
         {
             // Dispose the steamCMDConPTY when WPF close
             steamCMDConPTY.Dispose();

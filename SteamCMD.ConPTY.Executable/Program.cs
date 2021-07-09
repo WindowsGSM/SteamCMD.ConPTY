@@ -34,7 +34,10 @@ namespace SteamCMD.ConPTY.Executable
                 ZipFile.ExtractToDirectory(zipPath, currentDirectory);
 
                 // Delete steamcmd.zip
-                File.Delete(zipPath);
+                if (File.Exists(zipPath))
+                {
+                    File.Delete(zipPath);
+                }
             }
 
             // Create directory "conpty"
@@ -84,10 +87,10 @@ namespace SteamCMD.ConPTY.Executable
             {
                 char[] buffer = new char[1024];
 
-                using StreamReader reader = new StreamReader(output);
-                using StreamWriter writer = new StreamWriter(Console.OpenStandardOutput()) { AutoFlush = true };
+                using var reader = new StreamReader(output);
+                using var writer = new StreamWriter(Console.OpenStandardOutput()) { AutoFlush = true };
                 outputFileStream = new FileStream(outputFilePath, FileMode.Create, FileAccess.Write);
-                using StreamWriter fileWriter = new StreamWriter(outputFileStream) { AutoFlush = true };
+                using var fileWriter = new StreamWriter(outputFileStream) { AutoFlush = true };
 
                 while (true)
                 {
@@ -122,9 +125,9 @@ namespace SteamCMD.ConPTY.Executable
             {
                 char[] buffer = new char[1024];
 
-                using StreamWriter writer = new StreamWriter(input) { AutoFlush = true };
+                using var writer = new StreamWriter(input) { AutoFlush = true };
                 inputFileStream = File.Open(inputFilePath, FileMode.OpenOrCreate, FileAccess.Read, FileShare.ReadWrite);
-                using StreamReader reader = new StreamReader(inputFileStream);
+                using var reader = new StreamReader(inputFileStream);
 
                 while (true)
                 {
@@ -136,11 +139,18 @@ namespace SteamCMD.ConPTY.Executable
 
                         if (data.Contains('\x3'))
                         {
-                            inputFileStream.Dispose();
-                            outputFileStream.Dispose();
+                            inputFileStream?.Dispose();
+                            outputFileStream?.Dispose();
 
-                            File.Delete(inputFilePath);
-                            File.Delete(outputFilePath);
+                            if (File.Exists(inputFilePath))
+                            {
+                                File.Delete(inputFilePath);
+                            }
+
+                            if (File.Exists(outputFilePath))
+                            {
+                                File.Delete(outputFilePath);
+                            }
                         }
 
                         await writer.WriteAsync(data);

@@ -45,6 +45,7 @@ namespace SteamCMD.ConPTY
         private static readonly string conptyExeFileName = "steamcmd.conpty.exe";
         private string inputFilePath;
         private string outputFilePath;
+        private FileStream outputFileStream;
         private bool disposedValue;
 
         /// <summary>
@@ -150,45 +151,53 @@ namespace SteamCMD.ConPTY
 
             var regex = new Regex(@"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])");
 
-            using (FileStream stream = File.Open(outputFilePath, FileMode.OpenOrCreate, FileAccess.Read, FileShare.ReadWrite))
-            using (StreamReader reader = new StreamReader(stream))
+            try
             {
-                char[] buffer = new char[1024];
+                outputFileStream = File.Open(outputFilePath, FileMode.OpenOrCreate, FileAccess.Read, FileShare.ReadWrite);
 
-                while (!disposedValue)
+                using (var reader = new StreamReader(outputFileStream))
                 {
-                    int readed = reader.Read(buffer, 0, buffer.Length);
+                    char[] buffer = new char[1024];
 
-                    if (readed > 0)
+                    while (true)
                     {
-                        var outputData = new string(buffer.Take(readed).ToArray());
+                        int readed = reader.Read(buffer, 0, buffer.Length);
 
-                        if (!titleInvoked)
+                        if (readed > 0)
                         {
-                            title += outputData;
+                            var outputData = new string(buffer.Take(readed).ToArray());
 
-                            string[] subs = title.Split(new string[] { cursorLow, cursorHigh }, 2, StringSplitOptions.None);
-
-                            if (subs.Length <= 1)
+                            if (!titleInvoked)
                             {
-                                continue;
+                                title += outputData;
+
+                                string[] subs = title.Split(new string[] { cursorLow, cursorHigh }, 2, StringSplitOptions.None);
+
+                                if (subs.Length <= 1)
+                                {
+                                    continue;
+                                }
+
+                                titleInvoked = true;
+
+                                title = regex.Replace(subs[0], string.Empty).TrimEnd('\x7');
+                                title = title.StartsWith("0;") ? title.Substring(2) : title;
+
+                                TitleReceived?.Invoke(this, title);
+
+                                outputData = cursorLow + subs[1];
                             }
 
-                            titleInvoked = true;
-
-                            title = regex.Replace(subs[0], string.Empty).TrimEnd('\x7');
-                            title = title.StartsWith("0;") ? title.Substring(2) : title;
-
-                            TitleReceived?.Invoke(this, title);
-
-                            outputData = cursorLow + subs[1];
+                            OutputDataReceived?.Invoke(this, FilterControlSequences ? regex.Replace(outputData, string.Empty) : outputData);
                         }
 
-                        OutputDataReceived?.Invoke(this, FilterControlSequences ? regex.Replace(outputData, string.Empty) : outputData);
+                        await Task.Delay(1).ConfigureAwait(false);
                     }
-
-                    await Task.Delay(1).ConfigureAwait(false);
                 }
+            }
+            catch (ObjectDisposedException)
+            {
+                // Disposed
             }
         }
 
@@ -196,15 +205,16 @@ namespace SteamCMD.ConPTY
         {
             if (!disposedValue)
             {
-                // Send ctrl-c kill the terminal
-                Write("\x3");
-
                 if (disposing)
                 {
                     
                 }
 
+                // Send ctrl-c kill the terminal
+                Write("\x3");
+
                 disposedValue = true;
+                outputFileStream?.Dispose();
             }
         }
 
