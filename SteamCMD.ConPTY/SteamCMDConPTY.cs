@@ -140,7 +140,7 @@ namespace SteamCMD.ConPTY
         /// Write data to the steamcmd, followed by a break line character.
         /// </summary>
         /// <param name="data"></param>
-        public void WriteLine(string data) => Write($"{data}\x13");
+        public void WriteLine(string data) => Write($"{data}\x0D");
 
         private async Task ReadConPtyOutput()
         {
