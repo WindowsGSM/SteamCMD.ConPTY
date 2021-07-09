@@ -69,6 +69,8 @@ namespace SteamCMD.WPF
                     TextBoxInput.Text = string.Empty;
                 }
             };
+
+            TextBoxInput.Focus();
         }
 
         protected override void OnClosing(CancelEventArgs e)
