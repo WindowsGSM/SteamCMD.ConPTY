@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace SteamCMD.ConPTY
@@ -97,7 +96,6 @@ namespace SteamCMD.ConPTY
                 WorkingDirectory = WorkingDirectory,
                 FileName = fileName,
                 Arguments = Arguments,
-                WindowStyle = ProcessWindowStyle.Normal,
                 UseShellExecute = false,
                 CreateNoWindow = true,
             };
@@ -142,13 +140,13 @@ namespace SteamCMD.ConPTY
         /// Write data to the steamcmd, followed by a break line character.
         /// </summary>
         /// <param name="data"></param>
-        public void WriteLine(string data) => Write(data + (char)13);
+        public void WriteLine(string data) => Write($"{data}\x13");
 
-        private void ReadConPtyOutput()
+        private async Task ReadConPtyOutput()
         {
             bool titleInvoked = false;
             string title = string.Empty;
-            const string cursorLow = "\x1B[?25l";
+            const string cursorLow = "\x1B[?25l", cursorHigh = "\x1B[?25h";
 
             var regex = new Regex(@"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])");
 
@@ -161,37 +159,35 @@ namespace SteamCMD.ConPTY
                 {
                     int readed = reader.Read(buffer, 0, buffer.Length);
 
-                    Thread.Sleep(1);
-
-                    if (readed == 0)
+                    if (readed > 0)
                     {
-                        continue;
-                    }
+                        var outputData = new string(buffer.Take(readed).ToArray());
 
-                    var outputData = new string(buffer.Take(readed).ToArray());
-
-                    if (!titleInvoked)
-                    {
-                        title += outputData;
-
-                        string[] subs = title.Split(new string[] { cursorLow }, 2, StringSplitOptions.None);
-
-                        if (subs.Length <= 1)
+                        if (!titleInvoked)
                         {
-                            continue;
+                            title += outputData;
+
+                            string[] subs = title.Split(new string[] { cursorLow, cursorHigh }, 2, StringSplitOptions.None);
+
+                            if (subs.Length <= 1)
+                            {
+                                continue;
+                            }
+
+                            titleInvoked = true;
+
+                            title = regex.Replace(subs[0], string.Empty).TrimEnd('\x7');
+                            title = title.StartsWith("0;") ? title.Substring(2) : title;
+
+                            TitleReceived?.Invoke(this, title);
+
+                            outputData = cursorLow + subs[1];
                         }
 
-                        titleInvoked = true;
-
-                        title = regex.Replace(subs[0], string.Empty);
-                        title = title.StartsWith("0;") ? title.Substring(2) : title;
-
-                        TitleReceived?.Invoke(this, title);
-
-                        outputData = cursorLow + subs[1];
+                        OutputDataReceived?.Invoke(this, FilterControlSequences ? regex.Replace(outputData, string.Empty) : outputData);
                     }
 
-                    OutputDataReceived?.Invoke(this, FilterControlSequences ? regex.Replace(outputData, string.Empty) : outputData);
+                    await Task.Delay(1).ConfigureAwait(false);
                 }
             }
         }

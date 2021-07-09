@@ -5,7 +5,6 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace SteamCMD.ConPTY.Executable
@@ -14,7 +13,7 @@ namespace SteamCMD.ConPTY.Executable
     {
         private static string inputFilePath;
         private static string outputFilePath;
-        private static bool IsCtrlCReceived = false;
+        private static bool IsCtrlCReceived;
 
         static int Main(string[] args)
         {
@@ -93,15 +92,11 @@ namespace SteamCMD.ConPTY.Executable
                 {
                     int readed = reader.Read(buffer, 0, buffer.Length);
 
-                    Thread.Sleep(1);
-
-                    if (readed == 0)
+                    if (readed > 0)
                     {
-                        continue;
+                        writer.Write(buffer, 0, readed);
+                        fileWriter.Write(buffer, 0, readed);
                     }
-
-                    writer.Write(buffer, 0, readed);
-                    fileWriter.Write(buffer, 0, readed);
                 }
 
                 fileStream.Dispose();
@@ -122,7 +117,7 @@ namespace SteamCMD.ConPTY.Executable
         /// Reads terminal input and copies it to the pipe
         /// </summary>
         /// <param name="input"></param>
-        private static void CopyInputFileTextToPipe(Stream input)
+        private static async Task CopyInputFileTextToPipe(Stream input)
         {
             try
             {
@@ -136,21 +131,19 @@ namespace SteamCMD.ConPTY.Executable
                 {
                     int readed = reader.Read(buffer, 0, buffer.Length);
 
-                    Thread.Sleep(1);
-
-                    if (readed == 0)
+                    if (readed > 0)
                     {
-                        continue;
+                        string data = new string(buffer.Take(readed).ToArray());
+
+                        if (data.Contains('\x3'))
+                        {
+                            IsCtrlCReceived = true;
+                        }
+
+                        writer.Write(data);
                     }
 
-                    string data = new string(buffer.Take(readed).ToArray());
-
-                    if (data.Contains('\x3'))
-                    {
-                        IsCtrlCReceived = true;
-                    }
-
-                    writer.Write(data);
+                    await Task.Delay(1);
                 }
 
                 fileStream.Dispose();
@@ -182,7 +175,7 @@ namespace SteamCMD.ConPTY.Executable
                 var key = Console.ReadKey(intercept: true).KeyChar;
 
                 // Change "Backspace" to "Ctrl + Backspace"
-                key = key == 8 ? (char)127 : key;
+                key = key == '\x08' ? '\x7F' : key;
 
                 // Send input character-by-character to the pipe
                 writer.Write(key);
