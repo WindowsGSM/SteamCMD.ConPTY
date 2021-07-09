@@ -77,7 +77,7 @@ namespace SteamCMD.ConPTY.Executable
         /// Reads PseudoConsole output and copies it to the terminal's standard out and copies it to the output file
         /// </summary>
         /// <param name="output"></param>
-        private static void CopyPipeToOutput(Stream output)
+        private static async Task CopyPipeToOutput(Stream output)
         {
             try
             {
@@ -90,12 +90,12 @@ namespace SteamCMD.ConPTY.Executable
 
                 while (!IsCtrlCReceived)
                 {
-                    int readed = reader.Read(buffer, 0, buffer.Length);
+                    int readed = await reader.ReadAsync(buffer, 0, buffer.Length);
 
                     if (readed > 0)
                     {
-                        writer.Write(buffer, 0, readed);
-                        fileWriter.Write(buffer, 0, readed);
+                        await writer.WriteAsync(buffer, 0, readed);
+                        await fileWriter.WriteAsync(buffer, 0, readed);
                     }
                 }
 
@@ -129,7 +129,7 @@ namespace SteamCMD.ConPTY.Executable
 
                 while (!IsCtrlCReceived)
                 {
-                    int readed = reader.Read(buffer, 0, buffer.Length);
+                    int readed = await reader.ReadAsync(buffer, 0, buffer.Length);
 
                     if (readed > 0)
                     {
@@ -140,10 +140,8 @@ namespace SteamCMD.ConPTY.Executable
                             IsCtrlCReceived = true;
                         }
 
-                        writer.Write(data);
+                        await writer.WriteAsync(data);
                     }
-
-                    await Task.Delay(1);
                 }
 
                 fileStream.Dispose();
@@ -164,7 +162,7 @@ namespace SteamCMD.ConPTY.Executable
         /// Reads terminal input and copies it to the PseudoConsole
         /// </summary>
         /// <param name="input"></param>
-        private static void CopyInputToPipe(Stream input)
+        private static async Task CopyInputToPipe(Stream input)
         {
             using var writer = new StreamWriter(input) { AutoFlush = true };
 
@@ -178,7 +176,7 @@ namespace SteamCMD.ConPTY.Executable
                 key = key == '\x08' ? '\x7F' : key;
 
                 // Send input character-by-character to the pipe
-                writer.Write(key);
+                await writer.WriteAsync(key);
             }
         }
 
