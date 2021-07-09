@@ -97,6 +97,8 @@ namespace SteamCMD.ConPTY.Executable
                         await writer.WriteAsync(buffer, 0, readed);
                         await fileWriter.WriteAsync(buffer, 0, readed);
                     }
+
+                    await Task.Delay(1).ConfigureAwait(false);
                 }
 
                 fileStream.Dispose();
@@ -142,6 +144,8 @@ namespace SteamCMD.ConPTY.Executable
 
                         await writer.WriteAsync(data);
                     }
+
+                    await Task.Delay(1).ConfigureAwait(false);
                 }
 
                 fileStream.Dispose();
