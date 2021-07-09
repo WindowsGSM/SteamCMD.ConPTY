@@ -1,0 +1,25 @@
+name: Publish Dotnet Package (GPR)
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  deploy:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET Core 3.1
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '3.1.x'
+        source-url: https://nuget.pkg.github.com/SteamCMD.ConPTY/index.json
+      env:
+        NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+    - name: Create the package
+      run: dotnet pack SteamCMD.ConPTY -c Release
+
+    - name: Publish the package to GPR
+      run: dotnet nuget push SteamCMD.ConPTY/bin/Release/*.nupkg
