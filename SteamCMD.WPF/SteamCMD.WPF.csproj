@@ -8,6 +8,10 @@
     <ApplicationIcon>icon.ico</ApplicationIcon>
     <RootNamespace>SteamCMD.WPF</RootNamespace>
     <AssemblyName>steamcmd.wpf</AssemblyName>
+    <SelfContained>false</SelfContained>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <PublishSingleFile>True</PublishSingleFile>
+    <PublishReadyToRun>True</PublishReadyToRun>
   </PropertyGroup>
 
   <ItemGroup>
