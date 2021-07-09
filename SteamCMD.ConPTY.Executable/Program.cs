@@ -13,7 +13,8 @@ namespace SteamCMD.ConPTY.Executable
     {
         private static string inputFilePath;
         private static string outputFilePath;
-        private static bool IsCtrlCReceived;
+        private static FileStream inputFileStream;
+        private static FileStream outputFileStream;
 
         static int Main(string[] args)
         {
@@ -85,10 +86,10 @@ namespace SteamCMD.ConPTY.Executable
 
                 using StreamReader reader = new StreamReader(output);
                 using StreamWriter writer = new StreamWriter(Console.OpenStandardOutput()) { AutoFlush = true };
-                using FileStream fileStream = new FileStream(outputFilePath, FileMode.Create, FileAccess.Write);
-                using StreamWriter fileWriter = new StreamWriter(fileStream) { AutoFlush = true };
+                outputFileStream = new FileStream(outputFilePath, FileMode.Create, FileAccess.Write);
+                using StreamWriter fileWriter = new StreamWriter(outputFileStream) { AutoFlush = true };
 
-                while (!IsCtrlCReceived)
+                while (true)
                 {
                     int readed = await reader.ReadAsync(buffer, 0, buffer.Length);
 
@@ -100,10 +101,6 @@ namespace SteamCMD.ConPTY.Executable
 
                     await Task.Delay(1).ConfigureAwait(false);
                 }
-
-                fileStream.Dispose();
-
-                File.Delete(outputFilePath);
             }
             catch (ObjectDisposedException)
             {
@@ -126,10 +123,10 @@ namespace SteamCMD.ConPTY.Executable
                 char[] buffer = new char[1024];
 
                 using StreamWriter writer = new StreamWriter(input) { AutoFlush = true };
-                using FileStream fileStream = File.Open(inputFilePath, FileMode.OpenOrCreate, FileAccess.Read, FileShare.ReadWrite);
-                using StreamReader reader = new StreamReader(fileStream);
+                inputFileStream = File.Open(inputFilePath, FileMode.OpenOrCreate, FileAccess.Read, FileShare.ReadWrite);
+                using StreamReader reader = new StreamReader(inputFileStream);
 
-                while (!IsCtrlCReceived)
+                while (true)
                 {
                     int readed = await reader.ReadAsync(buffer, 0, buffer.Length);
 
@@ -139,7 +136,11 @@ namespace SteamCMD.ConPTY.Executable
 
                         if (data.Contains('\x3'))
                         {
-                            IsCtrlCReceived = true;
+                            inputFileStream.Dispose();
+                            outputFileStream.Dispose();
+
+                            File.Delete(inputFilePath);
+                            File.Delete(outputFilePath);
                         }
 
                         await writer.WriteAsync(data);
@@ -147,10 +148,6 @@ namespace SteamCMD.ConPTY.Executable
 
                     await Task.Delay(1).ConfigureAwait(false);
                 }
-
-                fileStream.Dispose();
-
-                File.Delete(inputFilePath);
             }
             catch (ObjectDisposedException)
             {
