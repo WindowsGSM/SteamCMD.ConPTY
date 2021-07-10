@@ -1,9 +1,9 @@
 using System;
 using System.IO;
-using SteamCMD.ConPTY.Executable.Interop;
-using SteamCMD.ConPTY.Executable.Interop.Definitions;
+using SteamCMD.ConPTY.Interop;
+using SteamCMD.ConPTY.Interop.Definitions;
 
-namespace SteamCMD.ConPTY.Executable
+namespace SteamCMD.ConPTY
 {
     public class NativeConsole : IDisposable
     {

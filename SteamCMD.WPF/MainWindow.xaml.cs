@@ -11,13 +11,13 @@ namespace SteamCMD.WPF
     /// </summary>
     public partial class MainWindow : Window
     {
-        public SteamCMDConPTY steamCMDConPTY;
+        public WindowsPseudoConsole pseudoConsole;
 
         public MainWindow()
         {
             InitializeComponent();
 
-            steamCMDConPTY = new SteamCMDConPTY
+            pseudoConsole = new WindowsPseudoConsole
             {
                 // steamcmd.exe directory
                 WorkingDirectory = Directory.GetCurrentDirectory(),
@@ -30,7 +30,7 @@ namespace SteamCMD.WPF
             };
 
             // Set WPF title when title data received
-            steamCMDConPTY.TitleReceived += (sender, data) =>
+            pseudoConsole.TitleReceived += (sender, data) =>
             {
                 Dispatcher.Invoke(() =>
                 {
@@ -39,7 +39,7 @@ namespace SteamCMD.WPF
             };
 
             // Append the TextBoxOutput when output data receieved
-            steamCMDConPTY.OutputDataReceived += (sender, data) =>
+            pseudoConsole.OutputDataReceived += (sender, data) =>
             {
                 Dispatcher.Invoke(() =>
                 {
@@ -47,9 +47,9 @@ namespace SteamCMD.WPF
                     TextBoxOutput.ScrollToEnd();
                 });
             };
-            
+
             // Close the WPF when steamcmd.exe exited
-            steamCMDConPTY.Exited += (sender, exitCode) =>
+            pseudoConsole.Exited += (sender, exitCode) =>
             {
                 Dispatcher.Invoke(() =>
                 {
@@ -58,14 +58,14 @@ namespace SteamCMD.WPF
             };
 
             // Start steamcmd conpty
-            steamCMDConPTY.Start();
+            pseudoConsole.Start("steamcmd.exe");
 
             // Set up enter listener, and send the data to steamcmd conpty
             TextBoxInput.KeyDown += (s, e) =>
             {
                 if (e.Key == Key.Return)
                 {
-                    steamCMDConPTY.WriteLine(TextBoxInput.Text);
+                    pseudoConsole.WriteLine(TextBoxInput.Text);
                     TextBoxInput.Text = string.Empty;
                 }
             };
@@ -76,7 +76,7 @@ namespace SteamCMD.WPF
         protected override void OnClosed(EventArgs e)
         {
             // Dispose the steamCMDConPTY when WPF close
-            steamCMDConPTY.Dispose();
+            pseudoConsole.Dispose();
         }
     }
 }

@@ -2,7 +2,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 
-namespace SteamCMD.ConPTY.Executable
+namespace SteamCMD.ConPTY
 {
     [Serializable]
     public class InteropException : Exception

@@ -1,4 +1,4 @@
-namespace SteamCMD.ConPTY.Executable.Interop.Definitions
+namespace SteamCMD.ConPTY.Interop.Definitions
 {
     internal enum StdHandle
     {

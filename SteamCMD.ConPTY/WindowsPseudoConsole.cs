@@ -1,39 +1,39 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace SteamCMD.ConPTY
 {
     /// <summary>
-    /// SteamCMD - Pseudo Console (ConPTY)
+    /// Pseudo Console (ConPTY)
     /// </summary>
-    public class SteamCMDConPTY : Process
+    public class WindowsPseudoConsole
     {
         /// <summary>
-        /// Occurs when steamcmd title received
+        /// Occurs when console title received
         /// </summary>
         public event EventHandler<string> TitleReceived;
 
         /// <summary>
-        /// Occurs each time steamcmd writes a line.
+        /// Occurs each time console writes a line.
         /// </summary>
-        public new event EventHandler<string> OutputDataReceived;
+        public event EventHandler<string> OutputDataReceived;
 
         /// <summary>
-        /// Occurs when the steamcmd exits.
+        /// Occurs when the console exits.
         /// </summary>
-        public new event EventHandler<int> Exited;
+        public event EventHandler<int> Exited;
 
         /// <summary>
-        /// steamcmd.exe working directory
+        /// Working directory
         /// </summary>
         public string WorkingDirectory { get; set; }
 
         /// <summary>
-        /// Arguments that pass to steamcmd.exe. Example: "+login anonymous +app_update 232250 validate +quit"
+        /// Arguments that pass to the console. Example: "+login anonymous +app_update 232250 validate +quit"
         /// </summary>
         public string Arguments { get; set; } = string.Empty;
 
@@ -42,108 +42,124 @@ namespace SteamCMD.ConPTY
         /// </summary>
         public bool FilterControlSequences { get; set; } = false;
 
-        private static readonly string conptyExeFileName = "steamcmd.conpty.exe";
-        private string inputFilePath;
-        private string outputFilePath;
-        private FileStream outputFileStream;
+        private Terminal terminal;
+        private Stream inputStream;
         private bool disposedValue;
 
         /// <summary>
-        /// SteamCMD - Pseudo Console (ConPTY), required files will be created on the working directory.
+        /// Pseudo Console (ConPTY), required files will be created on the working directory.
         /// </summary>
-        public SteamCMDConPTY() { }
+        public WindowsPseudoConsole() { }
 
         /// <summary>
-        /// SteamCMD - Pseudo Console (ConPTY), required files will be created on the working directory.
+        /// Pseudo Console (ConPTY), required files will be created on the working directory.
         /// </summary>
-        /// <param name="workingDirectory">steamcmd.conpty.exe working directory</param>
-        public SteamCMDConPTY(string workingDirectory)
+        /// <param name="workingDirectory">Working directory</param>
+        public WindowsPseudoConsole(string workingDirectory)
         {
             WorkingDirectory = workingDirectory;
         }
 
         /// <summary>
-        /// SteamCMD - Pseudo Console (ConPTY), required files will be created on the working directory.
+        /// Pseudo Console (ConPTY), required files will be created on the working directory.
         /// </summary>
-        /// <param name="workingDirectory">steamcmd.conpty.exe working directory</param>
-        /// <param name="arguments">Arguments that pass to steamcmd.exe. Example: "+login anonymous +app_update 232250 validate +quit"</param>
-        public SteamCMDConPTY(string workingDirectory, string arguments)
+        /// <param name="workingDirectory">Working directory</param>
+        /// <param name="arguments">Arguments that pass to the console. Example: "+login anonymous +app_update 232250 validate +quit"</param>
+        public WindowsPseudoConsole(string workingDirectory, string arguments)
         {
             (WorkingDirectory, Arguments) = (workingDirectory, arguments);
         }
 
         /// <summary>
-        /// Start steamcmd pseudo console
+        /// Start pseudo console
         /// </summary>
-        public new void Start()
+        public void Start(string fileName = "steamcmd.exe", short width = 120, short height = 30)
         {
             if (WorkingDirectory == null)
             {
                 throw new Exception("WorkingDirectory is not set");
             }
 
-            string fileName = Path.Combine(WorkingDirectory, conptyExeFileName);
+            string filePath = Path.Combine(WorkingDirectory, fileName);
 
-            if (!File.Exists(fileName))
+            if (!File.Exists(filePath))
             {
-                Stream stream = GetType().Assembly.GetManifestResourceStream($"{typeof(SteamCMDConPTY).Namespace}.Resources.{conptyExeFileName}");
-                var bytes = new byte[stream.Length];
-                stream.Read(bytes, 0, bytes.Length);
-                File.WriteAllBytes(fileName, bytes);
+                throw new Exception($"File does not exist ({filePath})");
             }
 
-            StartInfo = new ProcessStartInfo
+            terminal = new Terminal();
+            terminal.Start($"{filePath}{(string.IsNullOrEmpty(Arguments) ? string.Empty : $" {Arguments}")}", width, height);
+
+            inputStream = terminal.Input;
+
+            Task.Run(() => ReadConPtyOutput(terminal.Output));
+
+            Task.Run(() =>
             {
-                WorkingDirectory = WorkingDirectory,
-                FileName = fileName,
-                Arguments = Arguments,
-                UseShellExecute = false,
-                CreateNoWindow = true,
-            };
-
-            EnableRaisingEvents = true;
-
-            base.Exited += (s, e) =>
-            {
-                Exited?.Invoke(this, ExitCode);
-            };
-            
-            base.Start();
-
-            var conptyDirectory = Path.Combine(StartInfo.WorkingDirectory, "conpty");
-            Directory.CreateDirectory(conptyDirectory);
-
-            inputFilePath = Path.Combine(conptyDirectory, $"{Id}.input");
-            outputFilePath = Path.Combine(conptyDirectory, $"{Id}.output");
-
-            Task.Run(() => ReadConPtyOutput());
+                terminal.WaitToExit();
+                Exited?.Invoke(this, terminal.GetExitCode(out uint exitCode) ? (int)exitCode : -1);
+            });
         }
 
         /// <summary>
-        /// Write data to the steamcmd.
+        /// Write data to the console.
         /// </summary>
         /// <param name="data"></param>
         public void Write(char data) => Write(data.ToString());
 
         /// <summary>
-        /// Write data to the steamcmd.
+        /// Write data to the console.
         /// </summary>
         /// <param name="data"></param>
         public void Write(char[] data) => Write(data.ToString());
 
         /// <summary>
-        /// Write data to the steamcmd.
+        /// Write data to the console.
         /// </summary>
         /// <param name="data"></param>
-        public void Write(string data) => File.AppendAllText(inputFilePath, data);
+        public void Write(string data)
+        {
+            var bytes = Encoding.UTF8.GetBytes(data);
+            inputStream.Write(bytes, 0, bytes.Length);
+            inputStream.Flush();
+        }
 
         /// <summary>
-        /// Write data to the steamcmd, followed by a break line character.
+        /// Write data to the console, followed by a break line character.
         /// </summary>
         /// <param name="data"></param>
         public void WriteLine(string data) => Write($"{data}\x0D");
 
-        private async Task ReadConPtyOutput()
+        /// <summary>
+        /// Write data to the console.
+        /// </summary>
+        /// <param name="data"></param>
+        public async Task WriteAsync(char data) => await WriteAsync(data.ToString());
+
+        /// <summary>
+        /// Write data to the console.
+        /// </summary>
+        /// <param name="data"></param>
+        public async Task WriteAsync(char[] data) => await WriteAsync(data.ToString());
+
+        /// <summary>
+        /// Write data to the console.
+        /// </summary>
+        /// <param name="data"></param>
+        public async Task WriteAsync(string data)
+        {
+            var bytes = Encoding.UTF8.GetBytes(data);
+            await inputStream.WriteAsync(bytes, 0, bytes.Length);
+            await inputStream.FlushAsync();
+        }
+
+        /// <summary>
+        /// Write data to the console, followed by a break line character.
+        /// </summary>
+        /// <param name="data"></param>
+        public async Task WriteLineAsync(string data) => await WriteAsync($"{data}\x0D");
+
+        private async Task ReadConPtyOutput(Stream output)
         {
             bool titleInvoked = false;
             string title = string.Empty;
@@ -153,9 +169,7 @@ namespace SteamCMD.ConPTY
 
             try
             {
-                outputFileStream = File.Open(outputFilePath, FileMode.OpenOrCreate, FileAccess.Read, FileShare.ReadWrite);
-
-                using (var reader = new StreamReader(outputFileStream))
+                using (var reader = new StreamReader(output))
                 {
                     char[] buffer = new char[1024];
 
@@ -201,7 +215,7 @@ namespace SteamCMD.ConPTY
             }
         }
 
-        protected new void Dispose(bool disposing)
+        protected void Dispose(bool disposing)
         {
             if (!disposedValue)
             {
@@ -210,15 +224,13 @@ namespace SteamCMD.ConPTY
                     
                 }
 
-                // Send ctrl-c kill the terminal
-                Write("\x3");
+                terminal.Dispose();
 
                 disposedValue = true;
-                outputFileStream?.Dispose();
             }
         }
 
-        ~SteamCMDConPTY()
+        ~WindowsPseudoConsole()
         {
             Dispose(disposing: false);
         }
@@ -226,7 +238,7 @@ namespace SteamCMD.ConPTY
         /// <summary>
         /// Release the resources
         /// </summary>
-        public new void Dispose()
+        public void Dispose()
         {
             Dispose(disposing: true);
             GC.SuppressFinalize(this);

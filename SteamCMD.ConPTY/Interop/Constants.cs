@@ -1,4 +1,4 @@
-namespace SteamCMD.ConPTY.Executable.Interop
+namespace SteamCMD.ConPTY.Interop
 {
     internal static class Constants
     {

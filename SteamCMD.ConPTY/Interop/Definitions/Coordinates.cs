@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 
-namespace SteamCMD.ConPTY.Executable.Interop.Definitions
+namespace SteamCMD.ConPTY.Interop.Definitions
 {
     [StructLayout(LayoutKind.Sequential)]
     internal struct Coordinates

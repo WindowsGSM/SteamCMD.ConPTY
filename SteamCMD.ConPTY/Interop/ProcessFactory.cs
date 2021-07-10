@@ -1,8 +1,8 @@
 using System;
 using System.Runtime.InteropServices;
-using SteamCMD.ConPTY.Executable.Interop.Definitions;
+using SteamCMD.ConPTY.Interop.Definitions;
 
-namespace SteamCMD.ConPTY.Executable.Interop
+namespace SteamCMD.ConPTY.Interop
 {
     internal static class ProcessFactory
     {

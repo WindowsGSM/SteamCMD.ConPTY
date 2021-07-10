@@ -1,10 +1,10 @@
 using Microsoft.Win32.SafeHandles;
-using SteamCMD.ConPTY.Executable.Interop.Definitions;
+using SteamCMD.ConPTY.Interop.Definitions;
 using System;
 using System.Drawing;
 using System.Runtime.InteropServices;
 
-namespace SteamCMD.ConPTY.Executable.Interop
+namespace SteamCMD.ConPTY.Interop
 {
     internal partial class ConsoleApi
     {

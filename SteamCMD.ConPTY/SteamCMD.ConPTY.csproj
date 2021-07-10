@@ -14,12 +14,7 @@
     <PackageIcon>icon.png</PackageIcon>
   </PropertyGroup>
 
-  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="dotnet publish &quot;..\SteamCMD.ConPTY.Executable&quot; -o &quot;Resources&quot;" />
-  </Target>
-
   <ItemGroup>
-    <None Remove="Resources\steamcmd.conpty.exe" />
     <None Include="..\LICENSE">
       <Pack>True</Pack>
       <PackagePath></PackagePath>
@@ -28,10 +23,6 @@
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="Resources\steamcmd.conpty.exe" />
   </ItemGroup>
 
 </Project>

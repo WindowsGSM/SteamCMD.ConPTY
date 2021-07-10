@@ -1,10 +1,10 @@
 using System;
 using System.IO;
 using System.Threading;
-using SteamCMD.ConPTY.Executable.Interop;
+using SteamCMD.ConPTY.Interop;
 using Microsoft.Win32.SafeHandles;
 
-namespace SteamCMD.ConPTY.Executable
+namespace SteamCMD.ConPTY
 {
     public class Terminal : IDisposable
     {
@@ -69,9 +69,9 @@ namespace SteamCMD.ConPTY.Executable
             BuildWaitHandler().WaitOne(Timeout.Infinite);
         }
 
-        public int GetExitCode()
+        public bool GetExitCode(out uint exitCode)
         {
-            return ProcessApi.GetExitCodeProcess(process.ProcessInfo.hProcess, out uint exitCode) ? (int)exitCode : 0;
+            return ProcessApi.GetExitCodeProcess(process.ProcessInfo.hProcess, out exitCode);
         }
 
         protected virtual void Dispose(bool disposing)

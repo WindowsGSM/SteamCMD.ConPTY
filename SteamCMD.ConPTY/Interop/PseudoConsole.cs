@@ -1,8 +1,8 @@
 using System;
-using SteamCMD.ConPTY.Executable.Interop.Definitions;
+using SteamCMD.ConPTY.Interop.Definitions;
 using Microsoft.Win32.SafeHandles;
 
-namespace SteamCMD.ConPTY.Executable.Interop
+namespace SteamCMD.ConPTY.Interop
 {
     internal class PseudoConsole : IDisposable
     {

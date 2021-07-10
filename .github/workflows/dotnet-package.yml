@@ -17,9 +17,6 @@ jobs:
       with:
         dotnet-version: '3.1.x'
 
-    - name: Build SteamCMD.ConPTY.Executable
-      run: dotnet build SteamCMD.ConPTY.Executable
-
     - name: Build SteamCMD.ConPTY
       run: dotnet build SteamCMD.ConPTY
 
