@@ -6,7 +6,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v2
@@ -18,11 +18,8 @@ jobs:
       env:
         NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
         
-    - name: Build
+    - name: Build and Create the package
       run: dotnet build SteamCMD.ConPTY -c Release
-
-    - name: Create the package
-      run: dotnet pack SteamCMD.ConPTY -c Release
 
     - name: Publish the package to GPR
       run: dotnet nuget push SteamCMD.ConPTY/bin/Release/*.nupkg

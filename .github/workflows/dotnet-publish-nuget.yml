@@ -6,7 +6,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v2
@@ -15,11 +15,8 @@ jobs:
       with:
         dotnet-version: '3.1.x'
 
-    - name: Build
+    - name: Build and Create the package
       run: dotnet build SteamCMD.ConPTY -c Release
-
-    - name: Create the package
-      run: dotnet pack SteamCMD.ConPTY -c Release
 
     - name: Publish the package to nuget.org
       run: dotnet nuget push SteamCMD.ConPTY/bin/Release/*.nupkg -k $NUGET_AUTH_TOKEN -s https://api.nuget.org/v3/index.json
