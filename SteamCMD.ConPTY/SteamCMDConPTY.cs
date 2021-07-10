@@ -1,0 +1,39 @@
+﻿using System.IO;
+using System.IO.Compression;
+using System.Net;
+
+namespace SteamCMD.ConPTY
+{
+    public class SteamCMDConPTY : WindowsPseudoConsole
+    {
+        /// <summary>
+        /// Start steamcmd.exe
+        /// </summary>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
+        public void Start(short width = 120, short height = 30)
+        {
+            string fileName = "steamcmd.exe";
+
+            // Download steamcmd.exe if not exists
+            if (!File.Exists(Path.Combine(base.WorkingDirectory, fileName)))
+            {
+                string zipPath = Path.Combine(base.WorkingDirectory, "steamcmd.zip");
+
+                // Download steamcmd.zip
+                using (var webClient = new WebClient())
+                {
+                    webClient.DownloadFile("https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip", zipPath);
+                }
+
+                // Extract steamcmd.zip
+                ZipFile.ExtractToDirectory(zipPath, base.WorkingDirectory);
+
+                // Delete steamcmd.zip
+                File.Delete(zipPath);
+            }
+
+            base.Start(fileName, width, height);
+        }
+    }
+}

@@ -73,7 +73,7 @@ namespace SteamCMD.ConPTY
         /// <summary>
         /// Start pseudo console
         /// </summary>
-        public void Start(string fileName = "steamcmd.exe", short width = 120, short height = 30)
+        public void Start(string fileName, short width = 120, short height = 30)
         {
             if (WorkingDirectory == null)
             {
