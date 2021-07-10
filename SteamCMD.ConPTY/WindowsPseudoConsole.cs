@@ -28,17 +28,17 @@ namespace SteamCMD.ConPTY
         public event EventHandler<int> Exited;
 
         /// <summary>
-        /// Working directory
+        /// Working directory. Default: <see cref="Directory.GetCurrentDirectory()"/>
         /// </summary>
-        public string WorkingDirectory { get; set; }
+        public string WorkingDirectory { get; set; } = Directory.GetCurrentDirectory();
 
         /// <summary>
-        /// Arguments that pass to the console
+        /// Arguments that pass to the console. Default: <see cref="string.Empty"/>
         /// </summary>
         public string Arguments { get; set; } = string.Empty;
 
         /// <summary>
-        /// Filtering out ANSI escape sequences on <see cref="OutputDataReceived"/> (Default: <see langword="false"/>) 
+        /// Filtering out ANSI escape sequences on <see cref="OutputDataReceived"/>. Default: <see langword="false"/>
         /// </summary>
         public bool FilterControlSequences { get; set; } = false;
 
