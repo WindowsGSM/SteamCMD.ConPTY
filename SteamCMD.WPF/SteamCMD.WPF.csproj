@@ -12,7 +12,6 @@
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <PublishSingleFile>True</PublishSingleFile>
     <PublishReadyToRun>True</PublishReadyToRun>
-    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
