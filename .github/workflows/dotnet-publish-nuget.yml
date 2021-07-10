@@ -19,6 +19,6 @@ jobs:
       run: dotnet build SteamCMD.ConPTY -c Release
 
     - name: Publish the package to nuget.org
-      run: dotnet nuget push "SteamCMD.ConPTY\bin\Release\*.nupkg" --source "https://api.nuget.org/v3/index.json" --api-key "$NUGET_AUTH_TOKEN"
+      run: dotnet nuget push SteamCMD.ConPTY\bin\Release\*.nupkg -s "https://api.nuget.org/v3/index.json" -k $NUGET_AUTH_TOKEN
       env:
         NUGET_AUTH_TOKEN: ${{ secrets.NUGET_TOKEN }}
