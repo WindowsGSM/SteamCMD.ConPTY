@@ -17,6 +17,9 @@ jobs:
         source-url: https://nuget.pkg.github.com/SteamCMD.ConPTY/index.json
       env:
         NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        
+    - name: Build
+      run: dotnet build SteamCMD.ConPTY -c Release
 
     - name: Create the package
       run: dotnet pack SteamCMD.ConPTY -c Release
