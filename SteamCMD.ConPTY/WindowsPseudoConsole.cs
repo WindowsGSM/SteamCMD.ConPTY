@@ -33,7 +33,7 @@ namespace SteamCMD.ConPTY
         public string WorkingDirectory { get; set; }
 
         /// <summary>
-        /// Arguments that pass to the console. Example: "+login anonymous +app_update 232250 validate +quit"
+        /// Arguments that pass to the console
         /// </summary>
         public string Arguments { get; set; } = string.Empty;
 
@@ -44,7 +44,7 @@ namespace SteamCMD.ConPTY
 
         private Terminal terminal;
         private Stream inputStream;
-        private bool disposedValue;
+        private bool disposed;
 
         /// <summary>
         /// Pseudo Console (ConPTY), required files will be created on the working directory.
@@ -64,7 +64,7 @@ namespace SteamCMD.ConPTY
         /// Pseudo Console (ConPTY), required files will be created on the working directory.
         /// </summary>
         /// <param name="workingDirectory">Working directory</param>
-        /// <param name="arguments">Arguments that pass to the console. Example: "+login anonymous +app_update 232250 validate +quit"</param>
+        /// <param name="arguments">Arguments that pass to the console</param>
         public WindowsPseudoConsole(string workingDirectory, string arguments)
         {
             (WorkingDirectory, Arguments) = (workingDirectory, arguments);
@@ -87,16 +87,22 @@ namespace SteamCMD.ConPTY
                 throw new Exception($"File does not exist ({filePath})");
             }
 
+            // Start pseudo console
             terminal = new Terminal();
             terminal.Start($"{filePath}{(string.IsNullOrEmpty(Arguments) ? string.Empty : $" {Arguments}")}", width, height);
 
+            // Save the inputStream
             inputStream = terminal.Input;
 
+            // Read pseudo console output in the background
             Task.Run(() => ReadConPtyOutput(terminal.Output));
 
+            // Wait the pseudo console exit in the background
             Task.Run(() =>
             {
                 terminal.WaitToExit();
+
+                // Call Exited event with exit code
                 Exited?.Invoke(this, terminal.GetExitCode(out uint exitCode) ? (int)exitCode : -1);
             });
         }
@@ -217,7 +223,7 @@ namespace SteamCMD.ConPTY
 
         protected void Dispose(bool disposing)
         {
-            if (!disposedValue)
+            if (!disposed)
             {
                 if (disposing)
                 {
@@ -226,7 +232,7 @@ namespace SteamCMD.ConPTY
 
                 terminal.Dispose();
 
-                disposedValue = true;
+                disposed = true;
             }
         }
 
