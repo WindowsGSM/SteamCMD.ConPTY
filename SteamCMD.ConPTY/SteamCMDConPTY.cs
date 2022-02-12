@@ -1,9 +1,13 @@
-﻿using System.IO;
+﻿using SteamCMD.ConPTY.Interop.Definitions;
+using System.IO;
 using System.IO.Compression;
 using System.Net;
 
 namespace SteamCMD.ConPTY
 {
+    /// <summary>
+    /// SteamCMD ConPTY
+    /// </summary>
     public class SteamCMDConPTY : WindowsPseudoConsole
     {
         /// <summary>
@@ -11,7 +15,7 @@ namespace SteamCMD.ConPTY
         /// </summary>
         /// <param name="width"></param>
         /// <param name="height"></param>
-        public void Start(short width = 120, short height = 30)
+        public ProcessInfo Start(short width = 120, short height = 30)
         {
             string fileName = "steamcmd.exe";
 
@@ -33,7 +37,7 @@ namespace SteamCMD.ConPTY
                 File.Delete(zipPath);
             }
 
-            base.Start(fileName, width, height);
+            return base.Start(fileName, width, height);
         }
     }
 }

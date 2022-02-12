@@ -5,33 +5,60 @@ using SteamCMD.ConPTY.Interop.Definitions;
 
 namespace SteamCMD.ConPTY
 {
+    /// <summary>
+    /// Native Console
+    /// </summary>
     public class NativeConsole : IDisposable
     {
         private IntPtr handle;
         private bool isDisposed;
         private Pipe stdOut, stdErr, stdIn;
 
+        /// <summary>
+        /// Native Console
+        /// </summary>
+        /// <param name="hidden"></param>
         public NativeConsole(bool hidden = true)
         {
             Initialise(hidden);
         }
 
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
         ~NativeConsole()
         {
             Dispose(false);
         }
 
+        /// <summary>
+        /// StdOut
+        /// </summary>
         public FileStream Output { get; private set; }
 
+        /// <summary>
+        /// StdErr
+        /// </summary>
         public FileStream Error { get; private set; }
 
+        /// <summary>
+        /// StdIn
+        /// </summary>
         public FileStream Input { get; private set; }
 
+        /// <summary>
+        /// Send CtrlEvent to the console
+        /// </summary>
+        /// <param name="ctrlEvent"></param>
         public static void SendCtrlEvent(CtrlEvent ctrlEvent)
         {
             ConsoleApi.GenerateConsoleCtrlEvent(ctrlEvent, 0);
         }
 
+        /// <summary>
+        /// Register OnClose Action
+        /// </summary>
+        /// <param name="action"></param>
         public static void RegisterOnCloseAction(Action action)
         {
             RegisterCtrlEventFunction((ctrlEvent) =>
@@ -45,17 +72,26 @@ namespace SteamCMD.ConPTY
             });
         }
 
+        /// <summary>
+        /// Register Ctrl Event Function
+        /// </summary>
+        /// <param name="function"></param>
         public static void RegisterCtrlEventFunction(CtrlEventDelegate function)
         {
             ConsoleApi.SetConsoleCtrlHandler(function, true);
         }
 
+        /// <inheritdoc/>
         public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
 
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        /// <param name="disposing"></param>
         protected virtual void Dispose(bool disposing)
         {
             if (isDisposed)

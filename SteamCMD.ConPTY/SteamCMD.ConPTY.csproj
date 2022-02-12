@@ -12,6 +12,8 @@
     <RepositoryUrl>https://github.com/WindowsGSM/SteamCMD.ConPTY</RepositoryUrl>
     <PackageTags>steamcmd, conpty, windows-10</PackageTags>
     <PackageIcon>icon.png</PackageIcon>
+	<Version>1.1.0</Version>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>

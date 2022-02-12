@@ -1,4 +1,5 @@
 ﻿using SteamCMD.ConPTY;
+using SteamCMD.ConPTY.Interop.Definitions;
 using System;
 using System.IO;
 using System.Windows;
@@ -58,7 +59,7 @@ namespace SteamCMD.WPF
             };
 
             // Start steamcmd conpty
-            steamCMDConPTY.Start();
+            ProcessInfo processInfo = steamCMDConPTY.Start();
 
             // Set up enter listener, and send the data to steamcmd conpty
             TextBoxInput.KeyDown += (s, e) =>

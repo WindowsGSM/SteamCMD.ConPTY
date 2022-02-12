@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SteamCMD.ConPTY.Interop.Definitions;
+using System;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -73,7 +74,7 @@ namespace SteamCMD.ConPTY
         /// <summary>
         /// Start pseudo console
         /// </summary>
-        public void Start(string fileName, short width = 120, short height = 30)
+        public ProcessInfo Start(string fileName, short width = 120, short height = 30)
         {
             if (WorkingDirectory == null)
             {
@@ -89,7 +90,7 @@ namespace SteamCMD.ConPTY
 
             // Start pseudo console
             terminal = new Terminal();
-            terminal.Start($"{filePath}{(string.IsNullOrEmpty(Arguments) ? string.Empty : $" {Arguments}")}", width, height);
+            ProcessInfo processInfo = terminal.Start($"{filePath}{(string.IsNullOrEmpty(Arguments) ? string.Empty : $" {Arguments}")}", width, height);
 
             // Save the inputStream
             inputStream = terminal.Input;
@@ -100,11 +101,13 @@ namespace SteamCMD.ConPTY
             // Wait the pseudo console exit in the background
             Task.Run(() =>
             {
-                terminal.WaitToExit();
+                terminal.WaitForExit();
 
                 // Call Exited event with exit code
-                Exited?.Invoke(this, terminal.GetExitCode(out uint exitCode) ? (int)exitCode : -1);
+                Exited?.Invoke(this, terminal.TryGetExitCode(out uint exitCode) ? (int)exitCode : -1);
             });
+
+            return processInfo;
         }
 
         /// <summary>
@@ -140,13 +143,13 @@ namespace SteamCMD.ConPTY
         /// Write data to the console.
         /// </summary>
         /// <param name="data"></param>
-        public async Task WriteAsync(char data) => await WriteAsync(data.ToString());
+        public Task WriteAsync(char data) => WriteAsync(data.ToString());
 
         /// <summary>
         /// Write data to the console.
         /// </summary>
         /// <param name="data"></param>
-        public async Task WriteAsync(char[] data) => await WriteAsync(data.ToString());
+        public Task WriteAsync(char[] data) => WriteAsync(data.ToString());
 
         /// <summary>
         /// Write data to the console.
@@ -163,7 +166,7 @@ namespace SteamCMD.ConPTY
         /// Write data to the console, followed by a break line character.
         /// </summary>
         /// <param name="data"></param>
-        public async Task WriteLineAsync(string data) => await WriteAsync($"{data}\x0D");
+        public Task WriteLineAsync(string data) => WriteAsync($"{data}\x0D");
 
         private async Task ReadConPtyOutput(Stream output)
         {
@@ -221,6 +224,10 @@ namespace SteamCMD.ConPTY
             }
         }
 
+        /// <summary>
+        /// Release the resources
+        /// </summary>
+        /// <param name="disposing"></param>
         protected void Dispose(bool disposing)
         {
             if (!disposed)
@@ -236,6 +243,9 @@ namespace SteamCMD.ConPTY
             }
         }
 
+        /// <summary>
+        /// Release the resources
+        /// </summary>
         ~WindowsPseudoConsole()
         {
             Dispose(disposing: false);

@@ -48,7 +48,5 @@ namespace SteamCMD.ConPTY.Interop
 
         [DllImport("kernel32.dll", SetLastError = true)]
         public static extern bool GetExitCodeProcess(IntPtr hProcess, out uint exitCode);
-
-
     }
 }

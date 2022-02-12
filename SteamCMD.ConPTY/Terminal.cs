@@ -3,9 +3,13 @@ using System.IO;
 using System.Threading;
 using SteamCMD.ConPTY.Interop;
 using Microsoft.Win32.SafeHandles;
+using SteamCMD.ConPTY.Interop.Definitions;
 
 namespace SteamCMD.ConPTY
 {
+    /// <summary>
+    /// Terminal
+    /// </summary>
     public class Terminal : IDisposable
     {
         private Pipe input;
@@ -14,6 +18,9 @@ namespace SteamCMD.ConPTY
         private Process process;
         private bool disposed;
 
+        /// <summary>
+        /// Terminal
+        /// </summary>
         public Terminal()
         {
             ConPtyFeature.ThrowIfVirtualTerminalIsNotEnabled();
@@ -24,16 +31,32 @@ namespace SteamCMD.ConPTY
             }
         }
 
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
         ~Terminal()
         {
             Dispose(false);
         }
 
+        /// <summary>
+        /// Input Stream
+        /// </summary>
         public FileStream Input { get; private set; }
 
+        /// <summary>
+        /// Output Stream
+        /// </summary>
         public FileStream Output { get; private set; }
 
-        public void Start(string shellCommand, short consoleWidth, short consoleHeight)
+        /// <summary>
+        /// Starts the console
+        /// </summary>
+        /// <param name="shellCommand"></param>
+        /// <param name="consoleWidth"></param>
+        /// <param name="consoleHeight"></param>
+        /// <returns></returns>
+        public ProcessInfo Start(string shellCommand, short consoleWidth, short consoleHeight)
         {
             input = new Pipe();
             output = new Pipe();
@@ -43,19 +66,29 @@ namespace SteamCMD.ConPTY
 
             Input = new FileStream(input.Write, FileAccess.Write);
             Output = new FileStream(output.Read, FileAccess.Read);
+
+            return process.ProcessInfo;
         }
 
-        public void KillConsole()
+        /// <summary>
+        /// Immediately stops the associated console.
+        /// </summary>
+        public void Kill()
         {
             console?.Dispose();
         }
 
+        /// <inheritdoc/>
         public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public WaitHandle BuildWaitHandler()
         {
             return new AutoResetEvent(false)
@@ -64,16 +97,28 @@ namespace SteamCMD.ConPTY
             };
         }
 
-        public void WaitToExit()
+        /// <summary>
+        /// Instructs the console to wait indefinitely for the associated process to exit.
+        /// </summary>
+        public void WaitForExit()
         {
             BuildWaitHandler().WaitOne(Timeout.Infinite);
         }
 
-        public bool GetExitCode(out uint exitCode)
+        /// <summary>
+        /// Try get ExitCode
+        /// </summary>
+        /// <param name="exitCode"></param>
+        /// <returns></returns>
+        public bool TryGetExitCode(out uint exitCode)
         {
             return ProcessApi.GetExitCodeProcess(process.ProcessInfo.hProcess, out exitCode);
         }
 
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        /// <param name="disposing"></param>
         protected virtual void Dispose(bool disposing)
         {
             if (disposed)

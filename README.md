@@ -12,6 +12,7 @@ A library using ConPTY feature to get real-time output from SteamCMD.
 
 ```cs
 using SteamCMD.ConPTY;
+using SteamCMD.ConPTY.Interop.Definitions;
 
 var steamCMDConPTY = new SteamCMDConPTY
 {
@@ -24,7 +25,10 @@ steamCMDConPTY.OutputDataReceived += (sender, data) => { };
 
 steamCMDConPTY.Exited += (sender, exitCode) => { };
 
-steamCMDConPTY.Start();
+ProcessInfo processInfo = steamCMDConPTY.Start();
+
+// Get SteamCMD PID by ProcessInfo
+Console.WriteLine(processInfo.dwProcessId);
 ```
 
 ## SteamCMD.WPF
