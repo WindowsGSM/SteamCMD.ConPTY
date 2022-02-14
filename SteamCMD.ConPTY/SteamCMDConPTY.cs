@@ -15,12 +15,12 @@ namespace SteamCMD.ConPTY
         /// </summary>
         /// <param name="width"></param>
         /// <param name="height"></param>
-        public ProcessInfo Start(short width = 120, short height = 30)
+        public new ProcessInfo Start(short width = 120, short height = 30)
         {
-            string fileName = "steamcmd.exe";
+            FileName = "steamcmd.exe";
 
             // Download steamcmd.exe if not exists
-            if (!File.Exists(Path.Combine(base.WorkingDirectory, fileName)))
+            if (!File.Exists(Path.Combine(base.WorkingDirectory, FileName)))
             {
                 string zipPath = Path.Combine(base.WorkingDirectory, "steamcmd.zip");
 
@@ -37,7 +37,7 @@ namespace SteamCMD.ConPTY
                 File.Delete(zipPath);
             }
 
-            return base.Start(fileName, width, height);
+            return base.Start(width, height);
         }
     }
 }

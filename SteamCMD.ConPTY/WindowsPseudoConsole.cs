@@ -34,6 +34,11 @@ namespace SteamCMD.ConPTY
         public string WorkingDirectory { get; set; } = Directory.GetCurrentDirectory();
 
         /// <summary>
+        /// Gets or sets the application or document to start.
+        /// </summary>
+        public string FileName { get; set; } = string.Empty;
+
+        /// <summary>
         /// Arguments that pass to the console. Default: <see cref="string.Empty"/>
         /// </summary>
         public string Arguments { get; set; } = string.Empty;
@@ -48,24 +53,26 @@ namespace SteamCMD.ConPTY
         private bool disposed;
 
         /// <summary>
-        /// Pseudo Console (ConPTY), required files will be created on the working directory.
+        /// Pseudo Console (ConPTY)
         /// </summary>
         public WindowsPseudoConsole() { }
 
         /// <summary>
-        /// Pseudo Console (ConPTY), required files will be created on the working directory.
+        /// Pseudo Console (ConPTY)
         /// </summary>
         /// <param name="workingDirectory">Working directory</param>
+        [Obsolete]
         public WindowsPseudoConsole(string workingDirectory)
         {
             WorkingDirectory = workingDirectory;
         }
 
         /// <summary>
-        /// Pseudo Console (ConPTY), required files will be created on the working directory.
+        /// Pseudo Console (ConPTY)
         /// </summary>
         /// <param name="workingDirectory">Working directory</param>
         /// <param name="arguments">Arguments that pass to the console</param>
+        [Obsolete]
         public WindowsPseudoConsole(string workingDirectory, string arguments)
         {
             (WorkingDirectory, Arguments) = (workingDirectory, arguments);
@@ -74,6 +81,46 @@ namespace SteamCMD.ConPTY
         /// <summary>
         /// Start pseudo console
         /// </summary>
+        public ProcessInfo Start(short width = 120, short height = 30)
+        {
+            if (WorkingDirectory == null)
+            {
+                throw new Exception("WorkingDirectory is not set");
+            }
+
+            string filePath = Path.Combine(WorkingDirectory, FileName);
+
+            if (!File.Exists(filePath))
+            {
+                throw new Exception($"File does not exist ({filePath})");
+            }
+
+            // Start pseudo console
+            terminal = new Terminal();
+            ProcessInfo processInfo = terminal.Start($"{filePath}{(string.IsNullOrEmpty(Arguments) ? string.Empty : $" {Arguments}")}", width, height);
+
+            // Save the inputStream
+            inputStream = terminal.Input;
+
+            // Read pseudo console output in the background
+            Task.Run(() => ReadConPtyOutput(terminal.Output));
+
+            // Wait the pseudo console exit in the background
+            Task.Run(() =>
+            {
+                terminal.WaitForExit();
+
+                // Call Exited event with exit code
+                Exited?.Invoke(this, terminal.TryGetExitCode(out uint exitCode) ? (int)exitCode : -1);
+            });
+
+            return processInfo;
+        }
+
+        /// <summary>
+        /// Start pseudo console
+        /// </summary>
+        [Obsolete]
         public ProcessInfo Start(string fileName, short width = 120, short height = 30)
         {
             if (WorkingDirectory == null)
@@ -230,17 +277,20 @@ namespace SteamCMD.ConPTY
         /// <param name="disposing"></param>
         protected void Dispose(bool disposing)
         {
-            if (!disposed)
+            if (disposed)
             {
-                if (disposing)
-                {
-                    
-                }
-
-                terminal.Dispose();
-
-                disposed = true;
+                return;
             }
+
+            disposed = true;
+
+            if (disposing)
+            {
+                
+            }
+
+            terminal.Dispose();
+            inputStream?.Dispose();
         }
 
         /// <summary>
